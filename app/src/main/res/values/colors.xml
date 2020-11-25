@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="tfe_color_primary">#ffa800</color>
+    <color name="tfe_color_primary_dark">#ff6f00</color>
+    <color name="tfe_color_accent">#425066</color>
+
+    <color name="tfe_semi_transparent">#66000000</color>
+
+    <color name="white">#FFFFFF</color>
+    <color name="green">#00FF00</color>
+    <color name="yellow">#FFFF00</color>
+    <color name="red">#FF0000</color>
+    <color name="six_feet_color">#FF0000</color>
+</resources>
