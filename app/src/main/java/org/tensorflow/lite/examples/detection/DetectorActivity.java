@@ -84,6 +84,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   private BorderedText borderedText;
 
+  //vars for social distance detection
+   private int humanDebounce = 0;
+  private int debounceFactor = 3;
+  private int fullHeight = 640;
+  private int warningDistance = 175; //values found by calculating FOV or OnePlus 7T selfie camera, and then trial and error - cayden
+  private int dangerDistance = 105; //values found by calculating FOV or OnePlus 7T selfie camera, and then trial and error - cayden
+
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
     final float textSizePx =
@@ -226,7 +233,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             }
 
             if (!person_seen && mappedRecognitions.isEmpty()){
-                noPersonDetected();
+                safeZone();
             }
 
             computingDetection = false;
@@ -235,31 +242,47 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 new Runnable() {
                   @Override
                   public void run() {
-                    showFrameInfo(previewWidth + "x" + previewHeight);
-                    showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
-                    showInference(lastProcessingTimeMs + "ms");
+//                    showFrameInfo(previewWidth + "x" + previewHeight);
+//                    showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
+//                    showInference(lastProcessingTimeMs + "ms");
                   }
                 });
           }
         });
   }
 
-  public void personDetected(Detector.Recognition mappedRecognitions){
-    System.out.println("I SAW A MAN OR WOMAN");
-    //get the main view
-    //set the background to red
-    int six_feet_color = getResources().getColor(R.color.six_feet_color);
-    full_container.setBackgroundColor(six_feet_color);
-    //make the other views invisible so we see the background
+  public void personDetected(Detector.Recognition humanBox){
+    System.out.println("RIGHT: " + humanBox.getLocation().right );
+    System.out.println("LEFT: " + humanBox.getLocation().left );
+    float height = humanBox.getLocation().right - humanBox.getLocation().left; //shouldn't this be top minus bottom? is the model trained on portrait images or something?
+    float distance = fullHeight - height;
+    System.out.println("THEIR DISTANCE IS " + distance);
+
+    if (distance < warningDistance) { //if we are within a wanring distance, yello
+      humanDebounce = 0;
+      int new_color = getResources().getColor(R.color.warning_color);
+      if (distance < dangerDistance){ //if we are within a danger distance, upgrade from yellow to red
+        new_color = getResources().getColor(R.color.danger_color);
+      }
+      //get the main view
+      //set the background to red
+      full_container.setBackgroundColor(new_color);
+      //make the other views invisible so we see the background
+    } else {
+      safeZone();
+    }
   }
 
-public void noPersonDetected(){
-  System.out.println("I SAW NO ONE");
-  //get the main view
+public void safeZone(){ //run if no people are around or if you are in the safe zone
+  humanDebounce = humanDebounce + 1;
+
+  if (humanDebounce >= debounceFactor) {
+    //get the main view
     //set the background to red
     int green = getResources().getColor(R.color.green);
     full_container.setBackgroundColor(green);
     //make the other views invisible so we see the background
+  }
   }
 
   @Override

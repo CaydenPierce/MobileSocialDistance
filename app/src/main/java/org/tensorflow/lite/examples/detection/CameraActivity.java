@@ -78,7 +78,7 @@ public abstract class CameraActivity extends AppCompatActivity
   private Runnable postInferenceCallback;
   private Runnable imageConverter;
 
-  public CoordinatorLayout full_container;
+  public LinearLayout full_container;
   public LinearLayout bottomSheetLayout;
   private LinearLayout gestureLayout;
   private BottomSheetBehavior<LinearLayout> sheetBehavior;
@@ -86,19 +86,22 @@ public abstract class CameraActivity extends AppCompatActivity
   protected TextView frameValueTextView, cropValueTextView, inferenceTimeTextView;
   protected ImageView bottomSheetArrowImageView;
   private ImageView plusImageView, minusImageView;
-  private SwitchCompat apiSwitchCompat;
+//  private SwitchCompat apiSwitchCompat;
   private TextView threadsTextView;
 
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
     LOGGER.d("onCreate " + this);
     super.onCreate(null);
+    hideSystemUI();
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
     setContentView(R.layout.tfe_od_activity_camera);
-    Toolbar toolbar = findViewById(R.id.toolbar);
-    setSupportActionBar(toolbar);
-    getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+    //hide the ui so we are full screen
+//    Toolbar toolbar = findViewById(R.id.toolbar);
+//    setSupportActionBar(toolbar);
+//    getSupportActionBar().setDisplayShowTitleEnabled(false);
 
     if (hasPermission()) {
       setFragment();
@@ -110,67 +113,94 @@ public abstract class CameraActivity extends AppCompatActivity
     threadsTextView = findViewById(R.id.threads);
     plusImageView = findViewById(R.id.plus);
     minusImageView = findViewById(R.id.minus);
-    apiSwitchCompat = findViewById(R.id.api_info_switch);
+    //apiSwitchCompat = findViewById(R.id.api_info_switch);
     bottomSheetLayout = findViewById(R.id.bottom_sheet_layout);
     gestureLayout = findViewById(R.id.gesture_layout);
-    sheetBehavior = BottomSheetBehavior.from(bottomSheetLayout);
+    //sheetBehavior = BottomSheetBehavior.from(bottomSheetLayout);
     bottomSheetArrowImageView = findViewById(R.id.bottom_sheet_arrow);
 
-    ViewTreeObserver vto = gestureLayout.getViewTreeObserver();
-    vto.addOnGlobalLayoutListener(
-        new ViewTreeObserver.OnGlobalLayoutListener() {
-          @Override
-          public void onGlobalLayout() {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-              gestureLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-            } else {
-              gestureLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-            //                int width = bottomSheetLayout.getMeasuredWidth();
-            int height = gestureLayout.getMeasuredHeight();
+//    ViewTreeObserver vto = gestureLayout.getViewTreeObserver();
+//    vto.addOnGlobalLayoutListener(
+//        new ViewTreeObserver.OnGlobalLayoutListener() {
+//          @Override
+//          public void onGlobalLayout() {
+//            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+//              gestureLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+//            } else {
+//              gestureLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+//            }
+//            //                int width = bottomSheetLayout.getMeasuredWidth();
+//            int height = gestureLayout.getMeasuredHeight();
+//
+//            //sheetBehavior.setPeekHeight(height);
+//          }
+//        });
+    //sheetBehavior.setHideable(false);
 
-            sheetBehavior.setPeekHeight(height);
-          }
-        });
-    sheetBehavior.setHideable(false);
-
-    sheetBehavior.setBottomSheetCallback(
-        new BottomSheetBehavior.BottomSheetCallback() {
-          @Override
-          public void onStateChanged(@NonNull View bottomSheet, int newState) {
-            switch (newState) {
-              case BottomSheetBehavior.STATE_HIDDEN:
-                break;
-              case BottomSheetBehavior.STATE_EXPANDED:
-                {
-                  bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_down);
-                }
-                break;
-              case BottomSheetBehavior.STATE_COLLAPSED:
-                {
-                  bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
-                }
-                break;
-              case BottomSheetBehavior.STATE_DRAGGING:
-                break;
-              case BottomSheetBehavior.STATE_SETTLING:
-                bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
-                break;
-            }
-          }
-
-          @Override
-          public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
-        });
+    //sheetBehavior.setBottomSheetCallback(
+//        new BottomSheetBehavior.BottomSheetCallback() {
+//          @Override
+//          public void onStateChanged(@NonNull View bottomSheet, int newState) {
+//            switch (newState) {
+//              case BottomSheetBehavior.STATE_HIDDEN:
+//                break;
+//              case BottomSheetBehavior.STATE_EXPANDED:
+//                {
+//                  bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_down);
+//                }
+//                break;
+//              case BottomSheetBehavior.STATE_COLLAPSED:
+//                {
+//                  bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
+//                }
+//                break;
+//              case BottomSheetBehavior.STATE_DRAGGING:
+//                break;
+//              case BottomSheetBehavior.STATE_SETTLING:
+//                bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
+//                break;
+//            }
+//          }
+//
+//          @Override
+//          public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
+//        });
 
     frameValueTextView = findViewById(R.id.frame_info);
     cropValueTextView = findViewById(R.id.crop_info);
     inferenceTimeTextView = findViewById(R.id.inference_info);
 
-    apiSwitchCompat.setOnCheckedChangeListener(this);
+//    apiSwitchCompat.setOnCheckedChangeListener(this);
 
-    plusImageView.setOnClickListener(this);
-    minusImageView.setOnClickListener(this);
+//    plusImageView.setOnClickListener(this);
+//    minusImageView.setOnClickListener(this);
+  }
+
+  private void hideSystemUI() {
+    // Enables regular immersive mode.
+    // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
+    // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+    View decorView = getWindow().getDecorView();
+    decorView.setSystemUiVisibility(
+            View.SYSTEM_UI_FLAG_IMMERSIVE
+                    // Set the content to appear under the system bars so that the
+                    // content doesn't resize when the system bars hide and show.
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    // Hide the nav bar and status bar
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN);
+  }
+
+  // Shows the system bars by removing all the flags
+// except for the ones that make the content appear under the system bars.
+  private void showSystemUI() {
+    View decorView = getWindow().getDecorView();
+    decorView.setSystemUiVisibility(
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
   }
 
   protected int[] getRgbBytes() {
@@ -503,8 +533,8 @@ public abstract class CameraActivity extends AppCompatActivity
   @Override
   public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
     setUseNNAPI(isChecked);
-    if (isChecked) apiSwitchCompat.setText("NNAPI");
-    else apiSwitchCompat.setText("TFLITE");
+//    if (isChecked) apiSwitchCompat.setText("NNAPI");
+//    else apiSwitchCompat.setText("TFLITE");
   }
 
   @Override
